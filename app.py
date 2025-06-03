@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import json, os
 from datetime import datetime
@@ -92,4 +93,4 @@ def get_file(filename):
     return send_from_directory(FILES_PATH, filename)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=10000)
