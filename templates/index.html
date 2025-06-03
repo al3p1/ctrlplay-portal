@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CtrlPlay Internal Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a0f2e 50%, #2d1b69 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background stars */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(79, 172, 254, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+
+        .subtitle {
+            color: #b0b0b0;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        input::placeholder {
+            color: #888;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        /* Main App Layout */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #4facfe, #00f2fe, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #4facfe;
+        }
+
+        .nav-item.active {
+            background: rgba(79, 172, 254, 0.2);
+            border-left-color: #4facfe;
+        }
+
+        .nav-icon {
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            color: #b0b0b0;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .card-date {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ff5722);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Files */
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-icon {
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: #4facfe;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Mobile Responsive */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(0, 0, 0, 0.8);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-top: 70px;
+            }
+        }
+
+        /* Admin Dashboard */
+        .admin-section {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-admin {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+        }
+
+        .status-employee {
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+        }
+
+        /* Voting system */
+        .vote-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .vote-btn {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vote-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Loading animations */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(79, 172, 254, 0.3);
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #4facfe;
+            font-size: 1.2rem;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Enhanced cards with hover effects */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(79, 172, 254, 0.2);
+            border-color: rgba(79, 172, 254, 0.5);
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        /* Enhanced buttons */
+        .btn, .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn::before, .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover, .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
+
+        .btn:hover::before, .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        /* Edit mode styles */
+        .edit-mode {
+            background: rgba(255, 193, 7, 0.1);
+            border-color: rgba(255, 193, 7, 0.5);
+        }
+
+        .edit-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-edit {
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .btn-save {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Enhanced access logs */
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .log-entry:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .device-info {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .delete-code-btn {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .delete-code-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        /* Content transitions */
+        .content-section {
+            display: none;
+            animation: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: slideInFromRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Code management section */
+        .code-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .code-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .code-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .code-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Stars Background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <div class="logo">CTRLPLAY</div>
+            <div class="subtitle">Internal Team Portal</div>
+            <div class="input-group">
+                <input type="text" id="accessCode" placeholder="Enter Access Code" maxlength="20">
+            </div>
+            <button class="btn" onclick="validateAccess()">Access Portal</button>
+            <div class="error" id="errorMessage" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <!-- Mobile Toggle -->
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">CTRLPLAY</div>
+                <div class="user-info">Welcome, <span id="userRole"></span></div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="showSection('announcements')">
+                    <span class="nav-icon">🛰️</span>
+                    <span>Announcements</span>
+                </div>
+                <div class="nav-item" onclick="showSection('suggestions')">
+                    <span class="nav-icon">💡</span>
+                    <span>Suggestions & Ideas</span>
+                </div>
+                <div class="nav-item" onclick="showSection('stock-guide')">
+                    <span class="nav-icon">📦</span>
+                    <span>How to Get Stock?</span>
+                </div>
+                <div class="nav-item" onclick="showSection('files')">
+                    <span class="nav-icon">📁</span>
+                    <span>Files</span>
+                </div>
+                <div class="nav-item admin-only" onclick="showSection('admin')" style="display: none;">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Admin Dashboard</span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Announcements Section -->
+            <div class="content-section active" id="announcements">
+                <div class="section-header">
+                    <h1 class="section-title">Announcements</h1>
+                    <p class="section-subtitle">Stay updated with the latest news and updates</p>
+                </div>
+                <div class="admin-only" style="display: none;">
+                    <div class="card">
+                        <h3>Post New Announcement</h3>
+                        <div class="form-group">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-input" id="announcementTitle" placeholder="Announcement title">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <textarea class="form-textarea" id="announcementContent" placeholder="Announcement content"></textarea>
+                        </div>
+                        <button class="btn-primary" onclick="postAnnouncement()">Post Announcement</button>
+                    </div>
+                </div>
+                <div id="announcementsList"></div>
+            </div>
+
+            <!-- Suggestions Section -->
+            <div class="content-section" id="suggestions">
+                <div class="section-header">
+                    <h1 class="section-title">Suggestions & Ideas</h1>
+                    <p class="section-subtitle">Share your ideas and help improve CTRLPLAY</p>
+                </div>
+                <div class="card">
+                    <h3>Submit New Suggestion</h3>
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-input" id="suggestionTitle" placeholder="Suggestion title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="suggestionContent" placeholder="Describe your suggestion or issue"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-input" id="suggestionType">
+                            <option value="suggestion">Suggestion</option>
+                            <option value="idea">Idea</option>
+                            <option value="issue">Issue</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="submitSuggestion()">Submit</button>
+                </div>
+                <div id="suggestionsList"></div>
+            </div>
+
+            <!-- Stock Guide Section -->
+            <div class="content-section" id="stock-guide">
+                <div class="section-header">
+                    <h1 class="section-title">How to Get Stock?</h1>
+                    <p class="section-subtitle">Learn how CTRLPLAY acquires and manages products</p>
+                </div>
+                <div class="admin-only" style="display: none;">
+                    <div class="card">
+                        <h3>Update Stock Guide</h3>
+                        <div class="form-group">
+                            <textarea class="form-textarea" id="stockGuideContent" placeholder="Update the stock guide content" style="min-height: 200px;"></textarea>
+                        </div>
+                        <div class="edit-controls">
+                            <button class="btn-primary" onclick="updateStockGuide()">Update Guide</button>
+                            <button class="btn-edit" onclick="editStockGuide()">Edit Mode</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="stockGuideDisplay">
+                    <div id="stockGuideText">
+                        <h3>Product Sourcing Guide</h3>
+                        <p>Welcome to the CTRLPLAY product sourcing guide. Here's how we acquire and manage our inventory:</p>
+                        <h4>1. Supplier Research</h4>
+                        <p>We research reliable suppliers who offer quality products at competitive prices.</p>
+                        <h4>2. Quality Assessment</h4>
+                        <p>All products undergo thorough quality checks before being added to our inventory.</p>
+                        <h4>3. Inventory Management</h4>
+                        <p>We use advanced inventory tracking systems to monitor stock levels and ensure availability.</p>
+                        <h4>4. Customer Feedback Integration</h4>
+                        <p>Customer reviews and feedback are continuously monitored to improve our product selection.</p>
+                    </div>
+                    <div class="admin-only edit-controls" style="display: none;">
+                        <button class="btn-edit" onclick="toggleStockGuideEdit()">Edit Guide</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Section -->
+            <div class="content-section" id="files">
+                <div class="section-header">
+                    <h1 class="section-title">Files</h1>
+                    <p class="section-subtitle">Access shared documents and resources</p>
+                </div>
+                <div class="admin-only" style="display: none;">
+                    <div class="card">
+                        <h3>Upload New File</h3>
+                        <div class="form-group">
+                            <label class="form-label">File Name</label>
+                            <input type="text" class="form-input" id="fileName" placeholder="Enter file name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">File Type</label>
+                            <select class="form-input" id="fileType">
+                                <option value="document">Document</option>
+                                <option value="image">Image</option>
+                                <option value="spreadsheet">Spreadsheet</option>
+                                <option value="presentation">Presentation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="uploadFile()">Upload File</button>
+                    </div>
+                </div>
+                <div id="filesList"></div>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div class="content-section admin-only" id="admin" style="display: none;">
+                <div class="section-header">
+                    <h1 class="section-title">Admin Dashboard</h1>
+                    <p class="section-subtitle">Manage portal settings and monitor activity</p>
+                </div>
+                
+                <div class="card admin-section">
+                    <h3>Access Logs</h3>
+                    <div class="form-group">
+                        <button class="btn-primary" onclick="refreshAccessLogs()">Refresh Logs</button>
+                        <button class="btn-danger" onclick="clearAccessLogs()" style="margin-left: 10px;">Clear Logs</button>
+                    </div>
+                    <div id="accessLogs"></div>
+                </div>
+
+                <div class="card admin-section">
+                    <h3>Manage Access Codes</h3>
+                    <div class="form-group">
+                        <label class="form-label">New Access Code</label>
+                        <input type="text" class="form-input" id="newAccessCode" placeholder="CP-TEAM-XXXX-XXXX">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select class="form-input" id="newCodeRole">
+                            <option value="Employee">Employee</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="addAccessCode()">Add Code</button>
+                    
+                    <h4 style="margin-top: 30px;">Current Access Codes</h4>
+                    <div class="code-list" id="codesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Access codes database
+        const accessCodes = {
+            'CP-TEAM-K9QX-V3ZT': 'Employee',
+            'CP-TEAM-F2LJ-8NWD': 'Employee',
+            'CP-TEAM-Z7UM-P4TK': 'Employee',
+            'CP-TEAM-W3CY-MX9L': 'Employee',
+            'CP-TEAM-DRQ1-7EVA': 'Employee',
+            'CP-TEAM-TN2H-KC8Y': 'Employee',
+            'CP-TEAM-YL3B-QX5W': 'Employee',
+            'CP-TEAM-MV8J-HQ2Z': 'Employee',
+            'CP-TEAM-GBQX-N71C': 'Employee',
+            'CP-TEAM-VTZK-J4MW': 'Employee',
+            'CP-ADMIN-Z84L-X9KT': 'Admin',
+            'CP-ADMIN-T29J-Q3WB': 'Admin'
+        };
+
+        // Current user session
+        let currentUser = {
+            code: '',
+            role: '',
+            loginTime: ''
+        };
+
+        // Data storage
+        let announcements = [
+            {
+                id: 1,
+                title: 'Welcome to CtrlPlay Portal',
+                content: 'Welcome to our new internal portal! Here you can access all team resources, share ideas, and stay updated with company news.',
+                date: new Date().toLocaleDateString(),
+                author: 'Admin'
+            }
+        ];
+
+        let suggestions = [];
+        let files = [
+            {
+                id: 1,
+                name: 'Brand Guidelines.pdf',
+                type: 'document',
+                uploadDate: new Date().toLocaleDateString(),
+                uploader: 'Admin'
+            },
+            {
+                id: 2,
+                name: 'Product Catalog.xlsx',
+                type: 'spreadsheet',
+                uploadDate: new Date().toLocaleDateString(),
+                uploader: 'Admin'
+            }
+        ];
+
+        let accessLogs = [];
+        let stockGuide = '';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            loadData();
+            
+            // Handle Enter key on login
+            document.getElementById('accessCode').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    validateAccess();
+                }
+            });
+
+            // Auto-logout on page refresh/close
+            window.addEventListener('beforeunload', function() {
+                logout();
+            });
+        });
+
+        // Create animated stars background
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const numberOfStars = 100;
+
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Enhanced validation with loading animation
+        function validateAccess() {
+            const code = document.getElementById('accessCode').value.trim().toUpperCase();
+            const errorDiv = document.getElementById('errorMessage');
+
+            if (!code) {
+                errorDiv.textContent = 'Please enter an access code.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Show loading animation
+            showLoadingOverlay('Validating access...');
+
+            // Simulate network delay for realistic experience
+            setTimeout(() => {
+                if (accessCodes[code]) {
+                    // Valid code - log user in
+                    currentUser = {
+                        code: code,
+                        role: accessCodes[code],
+                        loginTime: new Date().toLocaleString()
+                    };
+
+                    // Log the access with device info
+                    accessLogs.push({
+                        code: code,
+                        role: accessCodes[code],
+                        loginTime: currentUser.loginTime,
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform,
+                        language: navigator.language,
+                        ip: 'xxx.xxx.xxx.xxx' // Simulated IP
+                    });
+
+                    updateLoadingText('Access granted! Loading portal...');
+                    
+                    setTimeout(() => {
+                        hideLoadingOverlay();
+                        
+                        // Show main app
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('appContainer').style.display = 'block';
+                        document.getElementById('userRole').textContent = currentUser.role;
+
+                        // Show admin features if admin
+                        if (currentUser.role === 'Admin') {
+                            document.querySelectorAll('.admin-only').forEach(el => {
+                                el.style.display = 'block';
+                            });
+                        }
+
+                        // Load initial content
+                        loadAnnouncements();
+                        loadSuggestions();
+                        loadFiles();
+                        loadAccessLogs();
+                        loadStockGuide();
+                        loadCodesList();
+
+                        errorDiv.style.display = 'none';
+                        showWelcomeMessage();
+                    }, 1000);
+
+                } else {
+                    // Invalid code
+                    updateLoadingText('Invalid access code...');
+                    setTimeout(() => {
+                        hideLoadingOverlay();
+                        errorDiv.textContent = 'Invalid access code. Please try again.';
+                        errorDiv.style.display = 'block';
+                        document.getElementById('accessCode').value = '';
+                    }, 1000);
+                }
+            }, 1500);
+        }
+
+        // Enhanced logout with animation
+        function logout() {
+            showLoadingOverlay('Signing out...');
+            
+            setTimeout(() => {
+                currentUser = { code: '', role: '', loginTime: '' };
+                hideLoadingOverlay();
+                
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+                document.getElementById('accessCode').value = '';
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                // Hide admin features
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                showNotification('Successfully logged out', 'info');
+            }, 1000);
+        }
+
+        // Loading overlay functions
+        function showLoadingOverlay(text = 'Loading...') {
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.id = 'loadingOverlay';
+            overlay.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text" id="loadingText">${text}</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function updateLoadingText(text) {
+            const loadingText = document.getElementById('loadingText');
+            if (loadingText) {
+                loadingText.textContent = text;
+            }
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                }, 300);
+            }
+        }
+
+        // Navigation functions
+        function showSection(section) {
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            document.getElementById(section).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Announcements functions
+        function loadAnnouncements() {
+            const container = document.getElementById('announcementsList');
+            container.innerHTML = '';
+
+            announcements.forEach(announcement => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${announcement.title}</div>
+                        <div class="card-date">${announcement.date}</div>
+                        ${currentUser.role === 'Admin' ? `<button class="btn-danger" onclick="deleteAnnouncement(${announcement.id})">Delete</button>` : ''}
+                    </div>
+                    <p>${announcement.content}</p>
+                    <small>Posted by: ${announcement.author}</small>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function postAnnouncement() {
+            const title = document.getElementById('announcementTitle').value.trim();
+            const content = document.getElementById('announcementContent').value.trim();
+
+            if (title && content) {
+                const newAnnouncement = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    date: new Date().toLocaleDateString(),
+                    author: currentUser.role
+                };
+
+                announcements.unshift(newAnnouncement);
+                loadAnnouncements();
+                
+                document.getElementById('announcementTitle').value = '';
+                document.getElementById('announcementContent').value = '';
+                
+                saveData();
+            }
+        }
+
+        function deleteAnnouncement(id) {
+            announcements = announcements.filter(a => a.id !== id);
+            loadAnnouncements();
+            saveData();
+        }
+
+        // Suggestions functions
+        function loadSuggestions() {
+            const container = document.getElementById('suggestionsList');
+            container.innerHTML = '';
+
+            suggestions.forEach(suggestion => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${suggestion.title}</div>
+                        <div class="card-date">${suggestion.date}</div>
+                    </div>
+                    <p>${suggestion.content}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                        <div>
+                            <span class="status-badge status-${suggestion.type}">${suggestion.type.toUpperCase()}</span>
+                            <small style="margin-left: 15px;">By: ${suggestion.author}</small>
+                        </div>
+                        <div class="vote-section">
+                            <button class="vote-btn ${suggestion.userVote === 'up' ? 'voted' : ''}" onclick="vote(${suggestion.id}, 'up')">
+                                👍 ${suggestion.upvotes || 0}
+                            </button>
+                            <button class="vote-btn ${suggestion.userVote === 'down' ? 'voted' : ''}" onclick="vote(${suggestion.id}, 'down')">
+                                👎 ${suggestion.downvotes || 0}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function submitSuggestion() {
+            const title = document.getElementById('suggestionTitle').value.trim();
+            const content = document.getElementById('suggestionContent').value.trim();
+            const type = document.getElementById('suggestionType').value;
+
+            if (title && content) {
+                const newSuggestion = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    type: type,
+                    date: new Date().toLocaleDateString(),
+                    author: currentUser.role,
+                    upvotes: 0,
+                    downvotes: 0,
+                    userVote: null
+                };
+
+                suggestions.unshift(newSuggestion);
+                loadSuggestions();
+                
+                document.getElementById('suggestionTitle').value = '';
+                document.getElementById('suggestionContent').value = '';
+                document.getElementById('suggestionType').value = 'suggestion';
+                
+                saveData();
+            }
+        }
+
+        function vote(suggestionId, voteType) {
+            const suggestion = suggestions.find(s => s.id === suggestionId);
+            if (!suggestion) return;
+
+            // Remove previous vote if exists
+            if (suggestion.userVote === 'up') {
+                suggestion.upvotes = Math.max(0, suggestion.upvotes - 1);
+            } else if (suggestion.userVote === 'down') {
+                suggestion.downvotes = Math.max(0, suggestion.downvotes - 1);
+            }
+
+            // Add new vote if different from previous
+            if (suggestion.userVote !== voteType) {
+                if (voteType === 'up') {
+                    suggestion.upvotes = (suggestion.upvotes || 0) + 1;
+                } else {
+                    suggestion.downvotes = (suggestion.downvotes || 0) + 1;
+                }
+                suggestion.userVote = voteType;
+            } else {
+                suggestion.userVote = null;
+            }
+
+            loadSuggestions();
+            saveData();
+        }
+
+        // Files functions
+        function loadFiles() {
+            const container = document.getElementById('filesList');
+            container.innerHTML = '';
+
+            files.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileIcon = getFileIcon(file.type);
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-icon">${fileIcon}</span>
+                        <div>
+                            <div>${file.name}</div>
+                            <small style="color: #888;">Uploaded on ${file.uploadDate} by ${file.uploader}</small>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-primary" onclick="downloadFile(${file.id})">Download</button>
+                        ${currentUser.role === 'Admin' ? `<button class="btn-danger" onclick="deleteFile(${file.id})">Delete</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(fileItem);
+            });
+        }
+
+        function getFileIcon(type) {
+            const icons = {
+                'document': '📄',
+                'image': '🖼️',
+                'spreadsheet': '📊',
+                'presentation': '📽️',
+                'other': '📎'
+            };
+            return icons[type] || '📎';
+        }
+
+        function uploadFile() {
+            const fileName = document.getElementById('fileName').value.trim();
+            const fileType = document.getElementById('fileType').value;
+
+            if (fileName) {
+                const newFile = {
+                    id: Date.now(),
+                    name: fileName,
+                    type: fileType,
+                    uploadDate: new Date().toLocaleDateString(),
+                    uploader: currentUser.role
+                };
+
+                files.unshift(newFile);
+                loadFiles();
+                
+                document.getElementById('fileName').value = '';
+                document.getElementById('fileType').value = 'document';
+                
+                saveData();
+            }
+        }
+
+        function downloadFile(id) {
+            const file = files.find(f => f.id === id);
+            if (file) {
+                // Simulate file download
+                alert(`Downloading ${file.name}...`);
+            }
+        }
+
+        function deleteFile(id) {
+            files = files.filter(f => f.id !== id);
+            loadFiles();
+            saveData();
+        }
+
+        // Stock Guide functions
+        function loadStockGuide() {
+            const stockGuideText = document.getElementById('stockGuideText');
+            const stockGuideContent = document.getElementById('stockGuideContent');
+            
+            if (stockGuide) {
+                stockGuideText.innerHTML = stockGuide;
+            }
+            
+            if (stockGuideContent && currentUser.role === 'Admin') {
+                stockGuideContent.value = stockGuide || stockGuideText.innerHTML;
+            }
+        }
+
+        function updateStockGuide() {
+            const content = document.getElementById('stockGuideContent').value.trim();
+            
+            if (content) {
+                stockGuide = content;
+                document.getElementById('stockGuideText').innerHTML = content;
+                saveData();
+                alert('Stock guide updated successfully!');
+            }
+        }
+
+        // Admin functions
+        function loadAccessLogs() {
+            if (currentUser.role !== 'Admin') return;
+            
+            const container = document.getElementById('accessLogs');
+            container.innerHTML = '';
+
+            accessLogs.slice(-20).reverse().forEach(log => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `
+                    <div>
+                        <strong>${log.code}</strong><br>
+                        <small>${log.loginTime}</small>
+                    </div>
+                    <div>
+                        <span class="status-badge status-${log.role.toLowerCase()}">${log.role}</span>
+                    </div>
+                `;
+                container.appendChild(logEntry);
+            });
+        }
+
+        function addAccessCode() {
+            const newCode = document.getElementById('newAccessCode').value.trim().toUpperCase();
+            const role = document.getElementById('newCodeRole').value;
+
+            if (newCode && !accessCodes[newCode]) {
+                accessCodes[newCode] = role;
+                
+                document.getElementById('newAccessCode').value = '';
+                document.getElementById('newCodeRole').value = 'Employee';
+                
+                saveData();
+                alert(`Access code ${newCode} added successfully!`);
+            } else if (accessCodes[newCode]) {
+                alert('Access code already exists!');
+            } else {
+                alert('Please enter a valid access code!');
+            }
+        }
+
+        // Data persistence functions
+        function saveData() {
+            const data = {
+                announcements,
+                suggestions,
+                files,
+                accessLogs,
+                stockGuide,
+                accessCodes
+            };
+            // In a real application, this would save to a database
+            // For demo purposes, we'll store in memory
+        }
+
+        function loadData() {
+            // In a real application, this would load from a database
+            // For demo purposes, we'll use the initialized data
+        }
+
+        // Responsive design handlers
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+
+        // Prevent right-click and other security measures
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+            }
+        });
+
+        // Auto-refresh announcements every 30 seconds
+        setInterval(function() {
+            if (currentUser.role && document.getElementById('announcements').classList.contains('active')) {
+                loadAnnouncements();
+            }
+        }, 30000);
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 'rgba(79, 172, 254, 0.9)'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+                backdrop-filter: blur(10px);
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Add slide animations CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Welcome message after login
+        function showWelcomeMessage() {
+            setTimeout(() => {
+                showNotification(`Welcome to CtrlPlay Portal, ${currentUser.role}!`, 'success');
+            }, 500);
+        }
+
+        // Enhanced login function with welcome message
+        const originalValidateAccess = validateAccess;
+        validateAccess = function() {
+            const result = originalValidateAccess();
+            if (currentUser.role) {
+                showWelcomeMessage();
+            }
+            return result;
+        };
+    </script>
+</body>
+</html>
