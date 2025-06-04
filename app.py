@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-from supabase.supabase import supabase_get, supabase_insert
-from datetime import datetime
+from supabase import supabase_get, supabase_insert
 
 app = Flask(__name__)
 CORS(app)
