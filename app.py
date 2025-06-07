@@ -1,16 +1,19 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from supabase import supabase_get, supabase_insert
 from datetime import datetime
-import uuid
+import requests
+from supabase_config import SUPABASE_URL, HEADERS
 
 app = Flask(__name__)
 CORS(app)
 
-ACCESS_CODES = {
-    "CP-TEAM-K9QX-V3ZT": "employee",
-    "CP-ADMIN-Z84L-X9KT": "admin"
-}
+def supabase_get(table):
+    res = requests.get(f"{SUPABASE_URL}/rest/v1/{table}?select=*", headers=HEADERS)
+    return res.json() if res.ok else []
+
+def supabase_insert(table, data):
+    res = requests.post(f"{SUPABASE_URL}/rest/v1/{table}", headers={**HEADERS, "Content-Type": "application/json"}, json=data)
+    return res.ok
 
 @app.route("/")
 def home():
@@ -19,18 +22,18 @@ def home():
 @app.route("/api/login", methods=["POST"])
 def login():
     code = request.json.get("code")
-    role = ACCESS_CODES.get(code)
-    if not role:
+    codes = supabase_get("access_codes")
+    match = next((c for c in codes if c["code"] == code), None)
+    if not match:
         return jsonify({"success": False, "message": "Invalid access code"}), 401
-
     log = {
         "code": code,
-        "role": role,
+        "role": match["role"],
         "user_agent": request.headers.get("User-Agent"),
         "timestamp": datetime.utcnow().isoformat()
     }
     supabase_insert("access_logs", log)
-    return jsonify({"success": True, "role": role})
+    return jsonify({"success": True, "role": match["role"]})
 
 @app.route("/api/announcements", methods=["GET", "POST"])
 def announcements():
@@ -48,6 +51,26 @@ def suggestions():
     data["votes"] = 0
     data["timestamp"] = datetime.utcnow().isoformat()
     return jsonify({"success": supabase_insert("suggestions", data)})
+
+@app.route("/api/suggestions/vote", methods=["POST"])
+def vote_suggestion():
+    suggestion_id = request.json.get("id")
+    if not suggestion_id:
+        return jsonify({"success": False}), 400
+    res = requests.post(
+        f"{SUPABASE_URL}/rest/v1/rpc/increment_vote",
+        headers={**HEADERS, "Content-Type": "application/json"},
+        json={"suggestion_id": suggestion_id}
+    )
+    return jsonify({"success": res.status_code == 200})
+
+@app.route("/api/comments", methods=["GET", "POST"])
+def comments():
+    if request.method == "GET":
+        return jsonify(supabase_get("suggestion_comments"))
+    data = request.json
+    data["timestamp"] = datetime.utcnow().isoformat()
+    return jsonify({"success": supabase_insert("suggestion_comments", data)})
 
 @app.route("/api/chat", methods=["GET", "POST"])
 def chat():
@@ -87,16 +110,24 @@ def users():
     data["joined_at"] = datetime.utcnow().isoformat()
     return jsonify({"success": supabase_insert("users", data)})
 
-@app.route("/api/access-codes", methods=["GET", "POST"])
+@app.route("/api/access-codes", methods=["GET", "POST", "DELETE"])
 def access_codes():
     if request.method == "GET":
         return jsonify(supabase_get("access_codes"))
-    data = request.json
-    return jsonify({"success": supabase_insert("access_codes", {
-        "code": data.get("code"),
-        "role": data.get("role"),
-        "created_at": datetime.utcnow().isoformat()
-    })})
+    if request.method == "POST":
+        data = request.json
+        return jsonify({"success": supabase_insert("access_codes", {
+            "code": data.get("code"),
+            "role": data.get("role"),
+            "created_at": datetime.utcnow().isoformat()
+        })})
+    if request.method == "DELETE":
+        code = request.json.get("code")
+        res = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/access_codes?code=eq.{code}",
+            headers=HEADERS
+        )
+        return jsonify({"success": res.status_code == 204})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
