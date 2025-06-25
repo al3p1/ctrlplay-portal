@@ -1,8 +1,0 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>CTRLPLAY Portal</title></head>
-<body>
-<!-- Your UI content here -->
-<script type="module" src="/static/js/ctrlplay.js"></script>
-</body>
-</html>
