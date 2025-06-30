@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTRLPLAY INTERNAL PORTAL</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <div class="logo">CTRLPLAY</div>
+            <div class="subtitle">Internal Team Portal</div>
+            <div class="input-group">
+                <input id="accessCode" maxlength="20" placeholder="Enter Access Code" type="text">
+            </div>
+            <button class="btn" onclick="validateAccess()">Access Portal</button>
+            <div class="error" id="errorMessage" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Sound notification -->
+    <audio class="sound-notification" id="notificationSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-magic-marimba-283.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <!-- Mobile Toggle -->
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">CTRLPLAY</div>
+                <div class="user-info">Welcome, <span id="userName"></span> (<span id="userRole"></span>)</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="showSection('announcements')">
+                    <span class="nav-icon">🛰️</span>
+                    <span>Announcements</span>
+                </div>
+                <div class="nav-item" onclick="showSection('suggestions')">
+                    <span class="nav-icon">💡</span>
+                    <span>Suggestions &amp; Ideas</span>
+                </div>
+                <div class="nav-item" onclick="showSection('stock-guide')">
+                    <span class="nav-icon">📦</span>
+                    <span>How to Get Stock?</span>
+                </div>
+                <div class="nav-item" onclick="showSection('files')">
+                    <span class="nav-icon">📁</span>
+                    <span>Files</span>
+                </div>
+                <div class="nav-item" onclick="showSection('chat')">
+                    <span class="nav-icon">💬</span>
+                    <span>Team Chat</span>
+                </div>
+                <div class="nav-item" onclick="showSection('profile')">
+                    <span class="nav-icon">👤</span>
+                    <span>My Profile</span>
+                </div>
+                <div class="nav-item admin-only" onclick="showSection('admin')" style="display: none;">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Admin Dashboard</span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Announcements Section -->
+            <div class="content-section active" id="announcements">
+                <!-- Content -->
+            </div>
+            
+            <!-- Other sections -->
+            <!-- ... -->
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase with proper CORS headers
+        const SUPABASE_URL = 'https://vyhemhabtgdgzrxcnzua.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5aGVtaGFidGdkZ3pyeGNuenVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDQyOTgsImV4cCI6MjA2NjM4MDI5OH0.CdvN0BwvkRU-lNXS2LLbJ9KfWiEVc82xvU6HT5RFyJo';
+
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false
+            },
+            global: {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                }
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
