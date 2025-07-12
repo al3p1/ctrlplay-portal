@@ -1,0 +1,62 @@
+[
+  {
+    "code": "CP-ADMIN-Z84L-X9KT",
+    "name": "Admin User 1",
+    "role": "Admin"
+  },
+  {
+    "code": "CP-ADMIN-T29J-Q3WB",
+    "name": "Admin User 2",
+    "role": "Admin"
+  },
+  {
+    "code": "CP-TEAM-K9QX-V3ZT",
+    "name": "Team Member 1",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-F2LJ-8NWD",
+    "name": "Team Member 2",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-Z7UM-P4TK",
+    "name": "Team Member 3",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-W3CY-MX9L",
+    "name": "Team Member 4",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-DRQ1-7EVA",
+    "name": "Team Member 5",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-TN2H-KC8Y",
+    "name": "Team Member 6",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-YL3B-QX5W",
+    "name": "Team Member 7",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-MV8J-HQ2Z",
+    "name": "Team Member 8",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-GBQX-N71C",
+    "name": "Team Member 9",
+    "role": "Team"
+  },
+  {
+    "code": "CP-TEAM-VTZK-J4MW",
+    "name": "Team Member 10",
+    "role": "Team"
+  }
+]
