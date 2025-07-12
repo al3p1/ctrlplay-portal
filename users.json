@@ -2,7 +2,8 @@
   {
     "code": "CP-ADMIN-Z84L-X9KT",
     "name": "Admin User 1",
-    "role": "Admin"
+    "role": "Admin",
+    "customName": "ابو العز"
   },
   {
     "code": "CP-ADMIN-T29J-Q3WB",
